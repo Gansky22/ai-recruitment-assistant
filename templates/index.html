@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 招聘广告助手 V5.3</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f7fb; margin:0; padding:24px; color:#222; }
+    .container { max-width:1120px; margin:0 auto; background:#fff; padding:28px; border-radius:18px; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    h1{margin:0;font-size:30px}
+    .hint{color:#666;font-size:14px;line-height:1.5}
+    label{display:block;margin-top:16px;font-weight:700}
+    input,select,textarea,button{width:100%;font-size:16px;border-radius:10px;border:1px solid #ddd;padding:12px;box-sizing:border-box}
+    textarea{min-height:100px;resize:vertical}
+    .raw-box{min-height:280px;background:#fffdf5;border:1px solid #facc15}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    .section-title{margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;font-size:20px;font-weight:800}
+    .small-note{font-size:13px;color:#666;margin-top:6px}
+    .btn,button{display:inline-block;text-align:center;text-decoration:none;margin-top:18px;background:#111827;color:white;border:none;cursor:pointer;font-weight:700;padding:14px;border-radius:10px}
+    .history-btn{background:#7c3aed;margin-top:0}
+    .clear-btn{background:#6b7280}
+    .copy-btn{background:#2563eb}
+    .word-btn{background:#059669}
+    .pdf-btn{background:#dc2626}
+    .result{margin-top:24px;padding:18px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;white-space:pre-wrap;line-height:1.6;overflow-x:auto}
+    .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+    .tag{display:inline-block;padding:6px 10px;background:#e0e7ff;border-radius:999px;margin-bottom:10px;font-size:14px}
+    .poster-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:20px}
+    .poster-card{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#fafafa}
+    .poster-card img{width:100%;border-radius:10px;display:block}
+    .poster-card a{display:inline-block;margin-top:10px;color:#2563eb;font-weight:700;text-decoration:none}
+    @media (max-width:800px){.grid,.grid-3,.actions,.poster-grid{grid-template-columns:1fr} body{padding:12px}.container{padding:18px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <h1>AI 招聘广告助手 V5.3</h1>
+        <p class="hint">新增：V5.3 一键生成 4 张 1:1 招聘 Poster。规则：每张 hook 不同、排版不同、约 8 行文字、不写联络号码、不写 Apply Now；不需要上传图片。</p>
+      </div>
+      <a class="btn history-btn" href="/history">查看历史记录</a>
+    </div>
+
+    <form method="post" action="/generate">
+      <div class="grid">
+        <div>
+          <label>功能</label>
+          <select name="task_type">
+            <option value="poster_v5" {% if task_type == 'poster_v5' %}selected{% endif %}>V5.3 一键生成4张Poster</option>
+            <option value="one_click_analysis" {% if task_type == 'one_click_analysis' or not task_type %}selected{% endif %}>一键完整分析：Job Title + 招聘广告 + Targeting + Poster</option>
+            <option value="title_review" {% if task_type == 'title_review' %}selected{% endif %}>Job Title 审查与建议</option>
+            <option value="full_recruitment" {% if task_type == 'full_recruitment' %}selected{% endif %}>完整招聘广告 + Targeting</option>
+            <option value="fb_final_copy" {% if task_type == 'fb_final_copy' %}selected{% endif %}>FB 最终中文招聘文案</option>
+            <option value="facebook_targeting" {% if task_type == 'facebook_targeting' %}selected{% endif %}>Facebook Targeting 英文</option>
+            <option value="poster_text" {% if task_type == 'poster_text' %}selected{% endif %}>招聘海报文案</option>
+            <option value="meta_ads" {% if task_type == 'meta_ads' %}selected{% endif %}>Meta广告建议</option>
+            <option value="translation" {% if task_type == 'translation' %}selected{% endif %}>中英马翻译</option>
+            <option value="client_reply" {% if task_type == 'client_reply' %}selected{% endif %}>客户回复优化</option>
+          </select>
+        </div>
+        <div>
+          <label>AI 选择</label>
+          <select name="provider">
+            <option value="auto" {% if provider == 'auto' %}selected{% endif %}>自动选择</option>
+            <option value="openai" {% if provider == 'openai' %}selected{% endif %}>ChatGPT / OpenAI</option>
+            <option value="gemini" {% if provider == 'gemini' %}selected{% endif %}>Gemini</option>
+            <option value="claude" {% if provider == 'claude' %}selected{% endif %}>Claude</option>
+          </select>
+        </div>
+      </div>
+
+      <label>客户招聘资料（直接 Paste）</label>
+      <textarea class="raw-box" name="raw_job_info" placeholder="把顾客给你的完整招聘资料直接贴在这里。Poster V5.3 会根据资料自动生成 4 张海报。">{{ raw_job_info or '' }}</textarea>
+      <div class="small-note">系统会尝试自动识别职位、公司、地点、薪资和联系方式。V5.3 不需要上传图片，会自动生成设计背景。</div>
+
+      <div class="section-title">补充资料（可选）</div>
+      <div class="grid">
+        <div><label>职位名称</label><input type="text" name="job_title" value="{{ job_title or '' }}" placeholder="可留空，系统会自动识别"></div>
+        <div><label>公司名称</label><input type="text" name="company_name" value="{{ company_name or '' }}" placeholder="可留空，系统会自动识别"></div>
+      </div>
+      <div class="grid">
+        <div><label>行业</label><input type="text" name="industry" value="{{ industry or '' }}" placeholder="例如：Beauty / Accounting / F&B"></div>
+        <div><label>工作地点</label><input type="text" name="location" value="{{ location or '' }}" placeholder="例如：Rawang / Sungai Buloh"></div>
+      </div>
+      <div class="grid">
+        <div><label>薪资范围</label><input type="text" name="salary" value="{{ salary or '' }}" placeholder="例如：RM2,800 - RM3,500"></div>
+        <div><label>应聘联系资料</label><input type="text" name="contact_info" value="{{ contact_info or '' }}" placeholder="可留空"></div>
+      </div>
+      <div class="grid">
+        <div><label>工作时间</label><input type="text" name="working_hours" value="{{ working_hours or '' }}"></div>
+        <div><label>年龄 / 性别 / 种族</label><input type="text" value="{{ age or '' }} {{ gender or '' }} {{ race or '' }}" disabled></div>
+      </div>
+      <label>福利待遇</label>
+      <textarea name="benefits">{{ benefits or '' }}</textarea>
+      <label>工作职责</label>
+      <textarea name="responsibilities">{{ responsibilities or '' }}</textarea>
+      <label>职位要求</label>
+      <textarea name="requirements">{{ requirements or '' }}</textarea>
+      <label>公司简介</label>
+      <textarea name="company_info">{{ company_info or '' }}</textarea>
+      <label>其他备注</label>
+      <textarea name="extra_notes" placeholder="例如：海报偏粉色、想要年轻感、不要太花、文字更短等">{{ extra_notes or '' }}</textarea>
+
+      <div class="grid">
+        <button type="submit">🚀 生成并保存记录</button>
+        <button type="button" class="clear-btn" onclick="clearForm()">清空表格</button>
+      </div>
+    </form>
+
+    {% if result %}
+      <div class="actions">
+        <button class="copy-btn" onclick="copyResult()">复制结果</button>
+        <a class="btn word-btn" href="/export/docx/{{ record_id }}">下载 Word</a>
+        <a class="btn pdf-btn" href="/export/pdf/{{ record_id }}">下载 PDF</a>
+        <a class="btn history-btn" href="/record/{{ record_id }}">查看此记录</a>
+      </div>
+      <div class="result" id="resultBox">
+        <div class="tag">使用 AI：{{ selected_provider }}</div>
+        <div class="tag">记录 ID：{{ record_id }}</div>
+        <br />{{ result }}
+      </div>
+    {% endif %}
+
+    {% if poster_files %}
+      <div class="section-title">V5.3 生成的 4 张 Poster</div>
+      <div class="poster-grid">
+        {% for poster in poster_files %}
+          <div class="poster-card">
+            <img src="/{{ poster }}" alt="poster {{ loop.index }}">
+            <a href="/{{ poster }}" target="_blank">打开 / 下载 Poster {{ loop.index }}</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    function copyResult(){
+      const box=document.getElementById('resultBox');
+      if(!box) return;
+      navigator.clipboard.writeText(box.innerText);
+      alert('已复制结果');
+    }
+    function clearForm(){
+      const fields=document.querySelectorAll('input[type=text], textarea');
+      fields.forEach(field=>field.value='');
+    }
+  </script>
+</body>
+</html>

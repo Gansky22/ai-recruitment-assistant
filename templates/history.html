@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>历史记录 - AI 招聘广告助手 V5.3</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f7fb; margin:0; padding:24px; color:#222; }
+    .container { max-width:1100px; margin:0 auto; background:#fff; padding:28px; border-radius:18px; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+    a { color:#2563eb; text-decoration:none; font-weight:700; }
+    input, button { font-size:16px; border-radius:10px; border:1px solid #ddd; padding:12px; box-sizing:border-box; }
+    form.search { display:flex; gap:10px; margin:20px 0; }
+    form.search input { flex:1; }
+    form.search button { background:#111827; color:white; border:none; cursor:pointer; }
+    table { width:100%; border-collapse:collapse; margin-top:16px; }
+    th, td { padding:12px; border-bottom:1px solid #e5e7eb; text-align:left; vertical-align:top; }
+    th { background:#f9fafb; }
+    .btn { display:inline-block; margin:3px; padding:8px 10px; border-radius:8px; color:white; font-size:13px; }
+    .view { background:#2563eb; } .word { background:#059669; } .pdf { background:#dc2626; }
+    .delete { background:#6b7280; color:white; border:none; cursor:pointer; }
+    @media(max-width:800px){ table, thead, tbody, th, td, tr { display:block; } th { display:none; } td { border-bottom:none; } tr { border-bottom:1px solid #ddd; padding:10px 0; } form.search { flex-direction:column; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>历史记录</h1>
+    <p><a href="/">← 回到生成页面</a></p>
+    <form class="search" method="get" action="/history">
+      <input type="text" name="q" placeholder="搜索职位、公司、地点、内容..." value="{{ q or '' }}">
+      <button type="submit">搜索</button>
+    </form>
+    <table>
+      <thead>
+        <tr><th>时间</th><th>功能</th><th>职位 / 公司</th><th>地点</th><th>AI</th><th>操作</th></tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>{{ row['created_at'] }}</td>
+          <td>{{ task_labels.get(row['task_type'], row['task_type']) }}</td>
+          <td><strong>{{ row['job_title'] or '-' }}</strong><br>{{ row['company_name'] or '-' }}</td>
+          <td>{{ row['location'] or '-' }}</td>
+          <td>{{ row['selected_provider'] }}</td>
+          <td>
+            <a class="btn view" href="/record/{{ row['id'] }}">查看</a>
+            <a class="btn word" href="/export/docx/{{ row['id'] }}">Word</a>
+            <a class="btn pdf" href="/export/pdf/{{ row['id'] }}">PDF</a>
+            <form method="post" action="/delete/{{ row['id'] }}" style="display:inline" onsubmit="return confirm('确定删除这条记录吗？')">
+              <button class="btn delete" type="submit">删除</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

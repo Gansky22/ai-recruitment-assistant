@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>记录详情 - AI 招聘广告助手 V5.3</title>
+  <style>
+    body { font-family:Arial, sans-serif; background:#f5f7fb; margin:0; padding:24px; color:#222; }
+    .container { max-width:1000px; margin:0 auto; background:#fff; padding:28px; border-radius:18px; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+    a, .btn { display:inline-block; text-decoration:none; font-weight:700; margin:5px 5px 5px 0; }
+    .btn { color:white; padding:10px 12px; border-radius:8px; }
+    .word { background:#059669; } .pdf { background:#dc2626; } .back { color:#2563eb; }
+    .box { white-space:pre-wrap; background:#f0fdf4; border:1px solid #bbf7d0; padding:18px; border-radius:12px; line-height:1.6; }
+    .meta { background:#f9fafb; border:1px solid #e5e7eb; padding:14px; border-radius:12px; margin:14px 0; }
+    .poster-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:18px}
+    .poster-grid img{width:100%;border-radius:10px;border:1px solid #e5e7eb}
+    @media(max-width:800px){.poster-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p><a class="back" href="/history">← 回历史记录</a> | <a class="back" href="/">新生成</a></p>
+    <h1>记录详情 #{{ record['id'] }}</h1>
+    <div class="meta">
+      时间：{{ record['created_at'] }}<br>
+      功能：{{ task_labels.get(record['task_type'], record['task_type']) }}<br>
+      AI：{{ record['selected_provider'] }}<br>
+      职位：{{ record['job_title'] or '-' }}<br>
+      公司：{{ record['company_name'] or '-' }}<br>
+      地点：{{ record['location'] or '-' }}<br>
+      薪资：{{ record['salary'] or '-' }}
+    </div>
+    <a class="btn word" href="/export/docx/{{ record['id'] }}">下载 Word</a>
+    <a class="btn pdf" href="/export/pdf/{{ record['id'] }}">下载 PDF</a>
+    <h2>生成结果</h2>
+    <div class="box">{{ record['result'] }}</div>
+
+    {% if poster_files %}
+    <h2>生成的 Poster</h2>
+    <div class="poster-grid">
+      {% for poster in poster_files %}
+      <a href="/{{ poster }}" target="_blank"><img src="/{{ poster }}" alt="poster {{ loop.index }}"></a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <h2>客户原始资料</h2>
+    <div class="box">{{ record['raw_job_info'] }}</div>
+  </div>
+</body>
+</html>
