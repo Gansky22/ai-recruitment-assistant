@@ -27,7 +27,7 @@ for d in [EXPORT_DIR, POSTER_DIR]:
     d.mkdir(exist_ok=True)
 
 app = FastAPI(title="AI Recruitment Assistant V5.3")
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 app.mount("/generated_posters", StaticFiles(directory=str(POSTER_DIR)), name="generated_posters")
 
 TaskType = Literal[
