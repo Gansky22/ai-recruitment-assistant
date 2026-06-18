@@ -1190,9 +1190,9 @@ def relpath_list(paths: list[Path]) -> list[str]:
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
-            "request": request,
             "result": None,
             "selected_provider": None,
             "record_id": None,
@@ -1246,8 +1246,8 @@ async def generate(
     selected_provider = choose_provider(task_type, provider)
 
     if task_type == "poster_v5":
-        selected_provider, plan = generate_poster_plan(job_info, provider, job_title, location, salary)
-        summary_lines = ["【V5 Poster 生成结果】"]
+        selected_provider, plan, safety_actions = generate_poster_plan(job_info, provider, job_title, location, salary)
+        summary_lines = ["【V5.3 Poster 生成结果】"]
         for i, p in enumerate(plan.get("posters", []), start=1):
             summary_lines += [
                 f"Poster {i}",
@@ -1257,6 +1257,7 @@ async def generate(
                 "海报文字：" + " | ".join(p.get("lines", [])),
                 "",
             ]
+        summary_lines += [format_safety_report(safety_actions)]
         result = "\n".join(summary_lines)
         record_id = save_history({
             "task_type": task_type,
@@ -1290,9 +1291,9 @@ async def generate(
         })
 
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
-            "request": request,
             "result": result,
             "selected_provider": selected_provider,
             "record_id": record_id,
@@ -1336,7 +1337,7 @@ def history(request: Request, q: str = ""):
     else:
         rows = conn.execute("SELECT * FROM generations ORDER BY id DESC LIMIT 100").fetchall()
     conn.close()
-    return templates.TemplateResponse("history.html", {"request": request, "rows": rows, "q": q, "task_labels": TASK_LABELS})
+    return templates.TemplateResponse(request, "history.html", {"rows": rows, "q": q, "task_labels": TASK_LABELS})
 
 
 @app.get("/record/{record_id}", response_class=HTMLResponse)
@@ -1348,7 +1349,7 @@ def view_record(request: Request, record_id: int):
         poster_files = json.loads(record["poster_paths"] or "[]")
     except Exception:
         poster_files = []
-    return templates.TemplateResponse("record.html", {"request": request, "record": record, "task_labels": TASK_LABELS, "poster_files": poster_files})
+    return templates.TemplateResponse(request, "record.html", {"record": record, "task_labels": TASK_LABELS, "poster_files": poster_files})
 
 
 @app.get("/export/docx/{record_id}")
